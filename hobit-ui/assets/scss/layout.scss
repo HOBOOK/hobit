@@ -1,0 +1,23 @@
+html{
+  font-size: 14px !important;
+}
+
+.main-container{
+  
+  
+  .app-container{
+    padding:100px;
+    transform: scale(0.9);
+    transition:all .2s cubic-bezier(.685,.0473,.346,1);
+    opacity: 0.2;
+  
+  
+    &.active{
+      transform: scale(1);
+      transition:all .2s cubic-bezier(.81,.34,0,.76);
+      opacity: 1;
+  
+    }
+  }
+}
+
