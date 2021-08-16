@@ -1,5 +1,5 @@
 <template>
-  <div class="app">
+  <v-app class="app">
 
   <template>
     <div class="grid">
@@ -12,7 +12,7 @@
             reduce
           >
             <template #logo>
-              <img src="/icon_img.png" alt="">
+              <img src="/logo-coin.png" alt="" width="32" height="32" style="max-width:32px; max-height:32px;">
             </template>
             <vs-sidebar-item id="home">
               
@@ -82,8 +82,8 @@
         <vs-col vs-type="flex" vs-justify="center" vs-align="center" w="11">
           <div class="main-container center examplex">
             <vs-navbar center-collapsed square v-model="navBar" fixed shadowScroll paddingScroll>
-              <template #left>
-                <img src="/icon_img.png" alt="">
+              <!-- <template #left>
+                
               </template>
               <vs-navbar-item :active="navBar === 'guide'" id="guide">
                 Guide
@@ -96,9 +96,9 @@
               </vs-navbar-item>
               <vs-navbar-item :active="navBar === 'license'" id="license">
                 license
-              </vs-navbar-item>
+              </vs-navbar-item> -->
               <template #right>
-                <vs-button flat >Login</vs-button>
+                <vs-button flat >로그인</vs-button>
                 <vs-button>Get Started</vs-button>
               </template>
             </vs-navbar>
@@ -112,7 +112,7 @@
   </template>
 
 
-  </div>
+  </v-app>
 </template>
 
 <script>

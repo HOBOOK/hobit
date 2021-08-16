@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@nuxtjs/axios": "^5.13.6",
+    "@nuxtjs/vuetify": "^1.12.1",
     "boxicons": "^2.0.9",
     "core-js": "^3.15.1",
     "material-icons": "^1.1.1",
