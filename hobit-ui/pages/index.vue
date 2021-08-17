@@ -20,9 +20,51 @@
           </template>
       </vs-input>
       <v-spacer/>
+
       <vs-button @click="getAccount()"  vs-type="flex" vs-justify="center" vs-align="center">
         업비트 계좌조회
       </vs-button>
+      <vs-button @click="getMarketsPrice()"  vs-type="flex" vs-justify="center" vs-align="center">
+        현재가 조회
+      </vs-button>
+      <vs-button @click="getMarkets()"  vs-type="flex" vs-justify="center" vs-align="center">
+        마켓종류 조회
+      </vs-button>
+    </v-row>
+    <v-row class="my-4">
+      <vs-table v-if="markets.length > 0" :key="priceKey">
+        <template #header>
+          <vs-input v-model="searchPrice" border placeholder="Search" />
+        </template>
+        <template #thead>
+          <vs-tr>
+            <vs-th sort @click="markets = $vs.sortData($event ,markets, 'korean_name')">
+              이름
+            </vs-th>
+            <vs-th sort @click="markets = $vs.sortData($event ,markets, 'price')">
+              시가(KRW)
+            </vs-th>
+          </vs-tr>
+        </template>
+        <template #tbody>
+          <vs-tr
+            :key="i"
+            v-for="(tr, i) in $vs.getSearch(markets, searchPrice)"
+            :data="tr"
+          >
+            <vs-td>
+              <vs-avatar class="mr-2">
+                
+                  <img :src="tr.logo" alt="">
+                </vs-avatar>{{ tr.korean_name }}
+            </vs-td>
+            <vs-td>
+            {{ tr.price }}
+            </vs-td>
+          </vs-tr>
+        </template>
+      </vs-table>
+
     </v-row>
     <v-row class="my-4">
       <vs-table v-if="accountInfo !== null">
@@ -95,7 +137,10 @@ export default {
   data:() => ({
     accountInfo:null,
     accessKey:'',
-    secretKey:''
+    secretKey:'',
+    markets:[],
+    priceKey:0,
+    searchPrice:''
   }),
   methods:{
     getAccount() {
@@ -112,7 +157,51 @@ export default {
         console.log(err)
         loading.close()
       })
-    }
+    },
+    async getMarkets(){
+      const loading = this.$vs.loading()
+      this.markets = []
+      await this.$axios.get('http://localhost:8080/markets',{
+        params: {
+          accessKey: this.accessKey,
+          secretKey: this.secretKey
+        }
+      }).then(res=>{
+        for(let i = 0; i < res.data.length; i++) {
+          if(res.data[i].market.indexOf('KRW') !== -1){
+            res.data[i].logo = '/crypto/' + res.data[i].market.substring(4).toLowerCase() +'.png'
+            this.markets.push(res.data[i])
+          }
+          
+        }
+        loading.close()
+      }).catch(err=>{
+        console.log(err)
+        loading.close()
+      })
+    },
+    async getMarketsPrice() {
+      await this.getMarkets()
+      let clear = 0
+      for(let i = 0; i < this.markets.length; i++) {
+        await this.$axios.get('http://localhost:8080/ticker/' + this.markets[i].market,{
+          params: {
+            accessKey: this.accessKey,
+            secretKey: this.secretKey
+          }
+        }).then(res=>{
+          if(typeof res.data === 'object')
+            this.markets[i].price = res.data[0].opening_price
+          this.priceKey++
+          clear++
+        }).catch(err=>{
+          console.log(err)
+          clear++
+        }).finally(()=>{
+        })
+      }
+    },
+    
   }
 }
 </script>

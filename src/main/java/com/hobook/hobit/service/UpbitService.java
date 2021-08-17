@@ -40,16 +40,12 @@ public class UpbitService {
         Algorithm algorithm = Algorithm.HMAC256(secretKey);
         String jwtToken = "";
         if(params != null){
-            ArrayList<String> queryElements = new ArrayList<>();
-            for(Map.Entry<String, String> entity : params.entrySet()) {
-                queryElements.add(entity.getKey() + "=" + entity.getValue());
-            }
-
-            String queryString = String.join("&", queryElements.toArray(new String[0]));
+            String queryString = getQueryString(params);
 
             MessageDigest md = MessageDigest.getInstance("SHA-512");
             md.update(queryString.getBytes("utf8"));
             String queryHash = String.format("%0128x", new BigInteger(1, md.digest()));
+
             jwtToken = JWT.create()
                     .withClaim("access_key", accessKey)
                     .withClaim("nonce", UUID.randomUUID().toString())
@@ -68,12 +64,22 @@ public class UpbitService {
         return authenticationToken;
     }
 
+    private String getQueryString(HashMap<String, String> params) {
+        ArrayList<String> queryElements = new ArrayList<>();
+        for(Map.Entry<String, String> entity : params.entrySet()) {
+            queryElements.add(entity.getKey() + "=" + entity.getValue());
+        }
+
+        return String.join("&", queryElements.toArray(new String[0]));
+    }
+
     private String requestGet(String accessKey, String secretKey, String requestUrl, HashMap<String, String> params) throws Exception{
         accessKey = !StringUtils.hasText(accessKey) ? defaultAccessKey : accessKey;
         secretKey = !StringUtils.hasText(secretKey) ? defaultSecretKey : secretKey;
         HttpClient client = HttpClientBuilder.create().build();
 
-        HttpGet request = new HttpGet(serverUrl + "/v1/" + requestUrl);
+        String endPoint = params == null ? serverUrl + "/v1/" + requestUrl : serverUrl + "/v1/" + requestUrl + "?" + getQueryString(params);
+        HttpGet request = new HttpGet(endPoint);
         request.setHeader("Content-Type", "application/json");
         request.addHeader("Authorization", getToken(accessKey, secretKey, params));
 
@@ -101,8 +107,20 @@ public class UpbitService {
         return  responseMessage;
     }
 
+    public String getMarkets(String accessKey, String secretKey) throws Exception{
+        HashMap<String, String> params = new HashMap<>();
+        params.put("isDetail", "false");
+        return requestGet(accessKey, secretKey, "market/all", params);
+    }
+
     public String getAccount(String accessKey, String secretKey) throws Exception{
         return requestGet(accessKey, secretKey, "accounts", null);
+    }
+
+    public String getTicker(String accessKey, String secretKey, String markets) throws Exception{
+        HashMap<String, String> params = new HashMap<>();
+        params.put("markets", markets);
+        return requestGet(accessKey, secretKey, "ticker", params);
     }
 
 }
